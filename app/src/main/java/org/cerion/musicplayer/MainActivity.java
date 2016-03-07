@@ -18,6 +18,7 @@ import org.cerion.musicplayer.service.AudioService;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -28,10 +29,9 @@ public class MainActivity extends AppCompatActivity implements DirectoryListView
     private static final String mRootPath = Environment.getExternalStorageDirectory().toString()+"/Music";
     //private List<File> mItems = getFiles();
 
-
     //private ArrayAdapter<File> mAdapter;
     //private DirectoryListAdapter mAdapter;
-    private MenuItem mMenuUp;
+    //private MenuItem mMenuUp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,7 +105,7 @@ public class MainActivity extends AppCompatActivity implements DirectoryListView
 
     @Override
     public void onDirectoryChanged(boolean bIsRoot) {
-        mMenuUp.setVisible(!bIsRoot);
+        //mMenuUp.setVisible(!bIsRoot);
     }
 
     @Override
@@ -122,10 +122,8 @@ public class MainActivity extends AppCompatActivity implements DirectoryListView
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        Log.d(TAG, "onCreateOptions");
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
-        mMenuUp = menu.findItem(R.id.action_up);
+        //mMenuUp = menu.findItem(R.id.action_up);
         //mMenuUp.setVisible(!mAdapter.isRoot());
         return true;
     }
@@ -140,12 +138,36 @@ public class MainActivity extends AppCompatActivity implements DirectoryListView
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
-        } else if(id == R.id.action_up) {
-            mDirectoryListView.navigateUp();
-            mMenuUp.setVisible(!mDirectoryListView.isRoot());
+        } else if(id == R.id.action_refresh) {
+            onRefresh();
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void onRefresh() {
+        Log.d(TAG,"onRefresh");
+        Database db = Database.getInstance(this);
+        db.reset();
+
+        addFilesInDirectory(new File(mRootPath),db);
+
+        db.log();
+    }
+
+    private void addFilesInDirectory(File dir, Database db) {
+        File files[] = dir.listFiles();
+
+        for(File f : files) {
+            if(f.isDirectory())
+                addFilesInDirectory(f,db);
+            else if(AudioFile.isAudioFile(f)) {
+                AudioFile af = new AudioFile(f);
+                db.add(af);
+            }
+
+        }
+
     }
 
 }

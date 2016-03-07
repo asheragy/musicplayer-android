@@ -55,6 +55,8 @@ public class NowPlayingActivity extends AppCompatActivity implements GestureDete
     protected void onResume() {
         super.onResume();
         registerReceiver(mBroadcastReceiver, AudioStateReceiver.BROADCAST_FILTER_ALL);
+
+        update(); //incase track changed since last pause
     }
 
     @Override
