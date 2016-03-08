@@ -26,7 +26,6 @@ public class DirectoryListView extends ListView {
 
     public interface OnNavigationListener {
         void onFileSelected(File file);
-        void onDirectoryChanged(boolean bIsRoot);
     }
 
     public DirectoryListView(Context context) {
@@ -59,7 +58,6 @@ public class DirectoryListView extends ListView {
                     mCurrentPath = file.getAbsolutePath();
                     setDirectory(mCurrentPath);
 
-                    mListener.onDirectoryChanged(isRoot());
                 } else {
                     mListener.onFileSelected(file);
                 }
@@ -70,14 +68,6 @@ public class DirectoryListView extends ListView {
         setDirectory(rootPath);
     }
 
-    public void navigateUp() {
-        if(!isRoot()) {
-            int pos = mCurrentPath.lastIndexOf("/");
-            mCurrentPath = mCurrentPath.substring(0,pos);
-            setDirectory(mCurrentPath);
-            mListener.onDirectoryChanged(isRoot());
-        }
-    }
 
     public boolean isRoot() {
         return (mCurrentPath == null || mRootPath.contentEquals(mCurrentPath));

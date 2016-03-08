@@ -1,32 +1,31 @@
 package org.cerion.musicplayer;
 
-import android.Manifest;
-import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
+import android.widget.Toolbar;
 
 import org.cerion.musicplayer.data.AudioFile;
-import org.cerion.musicplayer.service.AudioService;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements DirectoryListView.OnNavigationListener {
+public class MainActivity extends FragmentActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
-    private DirectoryListView mDirectoryListView;
-    private static final String mRootPath = Environment.getExternalStorageDirectory().toString()+"/Music";
+    private ViewPager mViewPager;
+    private PagerAdapter mPagerAdapter;
+
+    public static final String mRootPath = Environment.getExternalStorageDirectory().toString()+"/Music";
     //private List<File> mItems = getFiles();
 
     //private ArrayAdapter<File> mAdapter;
@@ -38,75 +37,22 @@ public class MainActivity extends AppCompatActivity implements DirectoryListView
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        setActionBar(toolbar);
 
-        mDirectoryListView = (DirectoryListView) findViewById(android.R.id.list);
+        mViewPager = (ViewPager) findViewById(R.id.pager);
+        mPagerAdapter = new MyPagerAdapter(getSupportFragmentManager());
+        mViewPager.setAdapter(mPagerAdapter);
 
-        if(verifyPermissions())
-            initList();
+
+        //Add tabs
+        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
+        tabLayout.setupWithViewPager(mViewPager);
     }
 
-    private void initList() {
-        mDirectoryListView.init(mRootPath, this);
-    }
 
-    private static final int PERMISSION_READ_STORAGE = 0;
-    private boolean verifyPermissions() {
-        if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
-           return true;
-        else
-            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_READ_STORAGE);
 
-        return false;
-    }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        if(requestCode == PERMISSION_READ_STORAGE && grantResults[0] == PackageManager.PERMISSION_GRANTED)
-            initList();
-        else
-            Toast.makeText(this,"External storage permission required", Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onFileSelected(File file) {
-        if (AudioFile.isAudioFile(file)) {
-            Intent intent = new Intent(MainActivity.this, AudioService.class);
-            intent.putStringArrayListExtra(AudioService.PLAYLIST_FILES, getPlayListFilePaths(file.getAbsolutePath()));
-            startService(intent);
-
-            intent = new Intent(MainActivity.this, NowPlayingActivity.class);
-            startActivity(intent);
-        } else {
-            Toast.makeText(MainActivity.this, "Not a valid audio file", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private ArrayList<String> getPlayListFilePaths(String pathOfFirst) {
-        List<File> files = mDirectoryListView.getFiles();
-        ArrayList<String> result = new ArrayList<>();
-
-        for(File file : files) {
-            if(AudioFile.isAudioFile(file)) {
-                String path = file.getAbsolutePath();
-                if(!path.contentEquals(pathOfFirst))
-                    result.add(path);
-            }
-        }
-
-        //Randomize and put first song at the beginning
-        Collections.shuffle(result);
-        result.add(0,pathOfFirst);
-
-        return result;
-    }
-
-    @Override
-    public void onDirectoryChanged(boolean bIsRoot) {
-        //mMenuUp.setVisible(!bIsRoot);
-    }
 
     @Override
     protected void onResume() {
@@ -168,6 +114,53 @@ public class MainActivity extends AppCompatActivity implements DirectoryListView
 
         }
 
+    }
+
+    private class MyPagerAdapter extends FragmentStatePagerAdapter {
+
+        private static final int NUM_PAGES = 2;
+
+        public MyPagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public int getCount() {
+            return NUM_PAGES;
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+
+            switch(position) {
+                case 0: return new DirectoryListFragment();
+                case 1: return new ArtistListFragment();
+            }
+
+            return null;
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+
+            switch(position) {
+                case 0: return "Folders";
+                case 1: return "Artists";
+            }
+
+            return null;
+        }
+
+        /* TODO find what this does
+        public Fragment getActiveFragment(ViewPager container, int position) {
+            String name = makeFragmentName(container.getId(), position);
+            return  mFragmentManager.findFragmentByTag(name);
+        }
+
+        private String makeFragmentName(int viewId, int index) {
+            return "android:switcher:" + viewId + ":" + index;
+        }
+        */
     }
 
 }

@@ -10,7 +10,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
+import android.widget.TextView;
 
+import org.cerion.musicplayer.data.AudioFile;
 import org.cerion.musicplayer.service.AudioService;
 import org.cerion.musicplayer.service.AudioStateReceiver;
 
@@ -19,6 +21,7 @@ public class ControlBar extends LinearLayout {
     private static final String TAG = ControlBar.class.getSimpleName();
 
     private Button mButtonPrimary;
+    private TextView mTitle;
     private SeekBar mSeekBar;
 
 
@@ -43,6 +46,7 @@ public class ControlBar extends LinearLayout {
         super(context,attrs);
         init();
 
+        mTitle = (TextView)findViewById(R.id.title);
         mButtonPrimary = (Button)findViewById(R.id.button_primary);
         Button mButtonBack = (Button)findViewById(R.id.button_back);
         Button mButtonNext = (Button)findViewById(R.id.button_next);
@@ -122,6 +126,12 @@ public class ControlBar extends LinearLayout {
             else {
                 mButtonPrimary.setText(getContext().getString(R.string.action_pause));
                 startSeekBar();
+            }
+
+            AudioFile current = AudioService.getActiveFile();
+            if(current != null) {
+                String title = current.getArtist() + " - " + current.getTitle();
+                mTitle.setText(title);
             }
         }
     }
