@@ -1,14 +1,15 @@
 package org.cerion.musicplayer;
 
-import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.cerion.musicplayer.data.AudioFile;
@@ -16,35 +17,69 @@ import org.cerion.musicplayer.service.AudioService;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 
-public class DirectoryListFragment extends Fragment implements DirectoryListView.OnNavigationListener {
+public class DirectoryListFragment extends NavigationFragment {
 
-    private DirectoryListView mDirectoryListView;
+    private static final String TAG = DirectoryListFragment.class.getSimpleName();
+    private OnNavigationListener mNavListener;
+    private String mRootPath;
+    private String mCurrentPath;
+    private DirectoryListAdapter mAdapter;
 
     public DirectoryListFragment() {
 
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.directory_list_fragment, container, false);
-
-        mDirectoryListView = (DirectoryListView) view.findViewById(android.R.id.list);
-
-        if(verifyPermissions())
-            initList();
-
-        return view;
-    }
-
-    private void initList() {
-        mDirectoryListView.init(MainActivity.mRootPath, this);
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mNavListener = (OnNavigationListener)getActivity();
     }
 
     @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.directory_list_fragment, container, false);
+        return view;
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        mRootPath = MainActivity.mRootPath;
+        mAdapter = new DirectoryListAdapter(getContext());
+        setListAdapter(mAdapter);
+
+        getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                File file = mAdapter.getItem(position);
+                //String path = file.getAbsolutePath();
+                //Log.d(TAG, "onClick " + path);
+
+                if (file.isDirectory()) {
+                    mCurrentPath = file.getAbsolutePath();
+                    setDirectory(mCurrentPath);
+
+                } else {
+                    onFileSelected(file);
+                }
+
+            }
+        });
+
+        setDirectory(mRootPath);
+    }
+
+    public void onNavChanged() {
+        mNavListener.onNavChanged(isRoot());
+    }
+
+
     public void onFileSelected(File file) {
         if (AudioFile.isAudioFile(file)) {
             Intent intent = new Intent(getContext(), AudioService.class);
@@ -60,7 +95,7 @@ public class DirectoryListFragment extends Fragment implements DirectoryListView
 
 
     private ArrayList<String> getPlayListFilePaths(String pathOfFirst) {
-        List<File> files = mDirectoryListView.getFiles();
+        List<File> files = getFiles();
         ArrayList<String> result = new ArrayList<>();
 
         for(File file : files) {
@@ -78,26 +113,84 @@ public class DirectoryListFragment extends Fragment implements DirectoryListView
         return result;
     }
 
-    //TODO, move to main activity
-    private static final int PERMISSION_READ_STORAGE = 0;
-    private boolean verifyPermissions() {
-        if (getActivity().checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
-            return true;
-        else
-            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_READ_STORAGE);
-
-        return false;
-    }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    public void onNavigateUp() {
+        if(isRoot())
+            Log.e(TAG, "cannot navigate up on root");
+        else {
+            getListView().performItemClick(getListView(), 0, 0);
+        }
 
-        if(requestCode == PERMISSION_READ_STORAGE && grantResults[0] == PackageManager.PERMISSION_GRANTED)
-            initList();
-        else
-            Toast.makeText(getContext(), "External storage permission required", Toast.LENGTH_SHORT).show();
+        onNavChanged();
+    }
+
+    public boolean isRoot() {
+        return (mCurrentPath == null || mRootPath.contentEquals(mCurrentPath));
+    }
+
+    private void setDirectory(String path) {
+        Log.d(TAG, "nav -> " + path);
+        mAdapter.setData(getDirectoryListing(path));
+
+        onNavChanged();
+    }
+
+    private List<File> getDirectoryListing(String directory) {
+        List<File> result = new ArrayList<>();
+
+        File dir = new File(directory);
+        File files[] = dir.listFiles();
+        Arrays.sort(files);
+
+        //Log.d("Files", "Size: " + length + " " + f.getAbsolutePath());
+        result.addAll(Arrays.asList(files));
+        return result;
+    }
+
+    public List<File> getFiles() {
+        List<File> result = new ArrayList<>();
+
+        for(int i = 0; i < mAdapter.getCount(); i++) {
+            File f = mAdapter.getItem(i);
+            if(f.isFile())
+                result.add(f);
+        }
+
+        return result;
     }
 
 
+    private class DirectoryListAdapter extends ArrayAdapter<File> {
+
+        public DirectoryListAdapter(Context context) {
+            super(context, android.R.layout.simple_list_item_1);
+        }
+
+        public void setData(List<File> files) {
+            clear();
+
+            if(mCurrentPath != null && !mRootPath.contentEquals(mCurrentPath))
+                files.add(0, new File(mCurrentPath).getParentFile());
+
+            addAll(files);
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            View view = super.getView(position, convertView, parent);
+            TextView text1 = (TextView) view.findViewById(android.R.id.text1);
+
+            File file = getItem(position);
+            String name = file.getName();
+            if(!isRoot() && position == 0)
+                name = "..";
+
+            text1.setText(name);
+
+            return view;
+        }
+
+    }
 }

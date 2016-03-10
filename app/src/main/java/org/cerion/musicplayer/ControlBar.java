@@ -1,7 +1,9 @@
 package org.cerion.musicplayer;
 
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -23,7 +25,6 @@ public class ControlBar extends LinearLayout {
     private Button mButtonPrimary;
     private TextView mTitle;
     private SeekBar mSeekBar;
-
 
     private final AudioStateReceiver mBroadcastReceiver = new AudioStateReceiver() {
         @Override
@@ -94,6 +95,23 @@ public class ControlBar extends LinearLayout {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 AudioService.setPosition(lastUserProgress);
+            }
+        });
+
+
+        //open NowPlayingActivity if not already in it
+        setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Activity activity = (Activity)getContext();
+                if(activity instanceof NowPlayingActivity)
+                    Log.d(TAG,"Already in activity");
+                else {
+                    Intent intent = new Intent(getContext(), NowPlayingActivity.class);
+                    getContext().startActivity(intent);
+                }
+
             }
         });
 

@@ -4,9 +4,10 @@
     android:layout_height="match_parent"
     tools:context="org.cerion.musicplayer.DirectoryListFragment">
 
-    <org.cerion.musicplayer.DirectoryListView
+    <ListView
+        android:id="@id/android:list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@android:id/list"/>
+        android:layout_height="match_parent">
+    </ListView>
 
 </FrameLayout>

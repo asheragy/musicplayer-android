@@ -1,5 +1,6 @@
 package org.cerion.musicplayer;
 
+
 import android.os.Bundle;
 import android.os.Environment;
 
@@ -7,23 +8,23 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.view.PagerAdapter;
+import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toolbar;
 
 import org.cerion.musicplayer.data.AudioFile;
 
 import java.io.File;
 
-public class MainActivity extends FragmentActivity {
+public class MainActivity extends FragmentActivity implements OnNavigationListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private ViewPager mViewPager;
-    private PagerAdapter mPagerAdapter;
+    private MyPagerAdapter mPagerAdapter;
 
     public static final String mRootPath = Environment.getExternalStorageDirectory().toString()+"/Music";
     //private List<File> mItems = getFiles();
@@ -39,9 +40,29 @@ public class MainActivity extends FragmentActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setActionBar(toolbar);
 
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+        getActionBar().setDisplayShowHomeEnabled(true);
+
+
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "onclick");
+                //getActionBar().setDisplayHomeAsUpEnabled(false);
+                NavigationFragment navFrag  = (NavigationFragment)mPagerAdapter.getActiveFragment(mViewPager, 0);
+
+                //Log.d(TAG,f.toString());
+                navFrag.onNavigateUp();
+            }
+        });
+
+
+        //TODO, verify permissions before showing any fragments
+
         mViewPager = (ViewPager) findViewById(R.id.pager);
         mPagerAdapter = new MyPagerAdapter(getSupportFragmentManager());
         mViewPager.setAdapter(mPagerAdapter);
+
 
 
         //Add tabs
@@ -116,12 +137,19 @@ public class MainActivity extends FragmentActivity {
 
     }
 
-    private class MyPagerAdapter extends FragmentStatePagerAdapter {
+    @Override
+    public void onNavChanged(boolean bRoot) {
+        getActionBar().setDisplayHomeAsUpEnabled(!bRoot);
+    }
 
+    private class MyPagerAdapter extends FragmentPagerAdapter {
+
+        private FragmentManager mFragmentManager;
         private static final int NUM_PAGES = 2;
 
         public MyPagerAdapter(FragmentManager fm) {
             super(fm);
+            mFragmentManager = fm;
         }
 
         @Override
@@ -151,16 +179,44 @@ public class MainActivity extends FragmentActivity {
             return null;
         }
 
-        /* TODO find what this does
+
+
         public Fragment getActiveFragment(ViewPager container, int position) {
             String name = makeFragmentName(container.getId(), position);
+            //List<Fragment> list = mFragmentManager.getFragments();
+            //Log.d(TAG,"tag = " + list.get(0).getTag());
+            //Log.d(TAG,"size = " + list.size());
+
             return  mFragmentManager.findFragmentByTag(name);
         }
 
         private String makeFragmentName(int viewId, int index) {
             return "android:switcher:" + viewId + ":" + index;
         }
-        */
+
     }
+
+
+    /*
+    private static final int PERMISSION_READ_STORAGE = 0;
+    private boolean verifyPermissions() {
+        if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
+            return true;
+        else
+            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_READ_STORAGE);
+
+        return false;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if(requestCode == PERMISSION_READ_STORAGE && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+            //proceed loading app
+        else
+            Toast.makeText(this, "External storage permission required", Toast.LENGTH_SHORT).show();
+    }
+    */
 
 }
