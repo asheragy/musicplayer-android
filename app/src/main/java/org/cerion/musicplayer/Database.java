@@ -10,8 +10,10 @@ import android.util.Log;
 
 import org.cerion.musicplayer.data.AudioFile;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 
@@ -89,6 +91,29 @@ public class Database extends SQLiteOpenHelper {
         if(c != null) {
             while (c.moveToNext()) {
                 result.put(c.getString(0), c.getInt(1) );
+            }
+            c.close();
+        }
+
+        db.close();
+        return result;
+    }
+
+    public List<AudioFile> getFilesForArtist(String artist) {
+        SQLiteDatabase db = getReadableDatabase();
+        List<AudioFile> result = new ArrayList<>();
+
+        String query = String.format("SELECT * FROM %s WHERE %s='%s' ORDER BY %s", TABLE, _ARTIST, artist, _TITLE);
+        Cursor c = db.rawQuery(query, null);
+
+        if(c != null) {
+            while (c.moveToNext()) {
+                String path = c.getString(c.getColumnIndexOrThrow(_PATH));
+                String album = c.getString(c.getColumnIndexOrThrow(_ALBUM));
+                String title = c.getString(c.getColumnIndexOrThrow(_TITLE));
+
+                AudioFile af = new AudioFile(path, artist, album, title);
+                result.add(af);
             }
             c.close();
         }

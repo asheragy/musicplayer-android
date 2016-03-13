@@ -1,70 +1,233 @@
 package org.cerion.musicplayer;
 
 
-import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 
-import android.support.v4.app.Fragment;
-import android.util.Log;
+import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import org.cerion.musicplayer.data.AudioFile;
+import org.cerion.musicplayer.service.AudioService;
+
+import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 
-/**
- * A simple {@link Fragment} subclass.
- */
-public class ArtistListFragment extends Fragment {
+public class ArtistListFragment extends NavigationFragment {
 
     private static final String TAG = ArtistListFragment.class.getSimpleName();
-    ListView mListView;
+    private ArtistListAdapter mAdapter;
+    private boolean mRoot = true;
+    private String mArtist;
 
     public ArtistListFragment() {
         // Required empty public constructor
     }
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mNavListener = (OnNavigationListener)getActivity();
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
-        View view = inflater.inflate(R.layout.artist_list_fragment, container, false);
-
-        mListView = (ListView)view.findViewById(R.id.list);
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, getItems());
-        mListView.setAdapter(adapter);
-
-        return view;
+        return inflater.inflate(R.layout.artist_list_fragment, container, false);
     }
 
-    private List<String> getItems() {
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
+        //ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, getItems());
+        mAdapter = new ArtistListAdapter(getContext());
+        //mAdapter.addAll( getItems() );
+        setListAdapter(mAdapter);
+        fillWithArtists();
+
+        getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                ListItem item = mAdapter.getItem(position);
+
+                if (item.file == null) { //artist
+                    fillWithArtist(item.title);
+                } else { //file
+                    onFileSelected(item.file);
+                }
+
+            }
+        });
+
+    }
+
+    public void onFileSelected(File file) {
+        if (AudioFile.isAudioFile(file)) {
+            Intent intent = new Intent(getContext(), AudioService.class);
+            intent.putStringArrayListExtra(AudioService.PLAYLIST_FILES, getPlayListFilePaths(file.getAbsolutePath()));
+            getContext().startService(intent);
+
+            intent = new Intent(getContext(), NowPlayingActivity.class);
+            startActivity(intent);
+        } else {
+            Toast.makeText(getContext(), "Not a valid audio file", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private ArrayList<String> getPlayListFilePaths(String pathOfFirst) {
+        Database db = Database.getInstance(getContext());
+        List<AudioFile> files = db.getFilesForArtist(mArtist);
+
+        ArrayList<String> result = new ArrayList<>();
+
+        for(AudioFile file : files) {
+            String path = file.getFile().getAbsolutePath();
+            if(!path.contentEquals(pathOfFirst))
+                result.add(path);
+        }
+
+        //Randomize and put first song at the beginning
+        Collections.shuffle(result);
+        result.add(0, pathOfFirst);
+
+        return result;
+    }
+
+
+    private void fillWithArtists() {
+        mRoot = true;
         Database db = Database.getInstance(getContext());
 
-        List<String> items = new ArrayList<>();
+        List<ListItem> items = new ArrayList<>();
         Map<String,Integer> map = db.getArtists();
 
         Iterator it = map.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry)it.next();
-            String name = pair.getKey() + " - " + pair.getValue();
-            items.add(name);
+            //String name = pair.getKey() + " - " + pair.getValue();
+
+            ListItem item = new ListItem("" + pair.getKey(), "" + pair.getValue());
+            items.add(item);
             it.remove();
         }
 
         Collections.sort(items);
 
-        return items;
+        mAdapter.setData(items);
+        mNavListener.onNavChanged(isRoot());
     }
 
+    private void fillWithArtist(String artist) {
+        mRoot = false;
+        mArtist = artist;
+
+        Database db = Database.getInstance(getContext());
+        List<AudioFile> files = db.getFilesForArtist(artist);
+
+        List<ListItem> items = new ArrayList<>();
+        for(AudioFile file : files) {
+            ListItem item = new ListItem(file.getTitle(), file.getAlbum(), file.getFile());
+            items.add(item);
+        }
+
+        //already sorted by title Collections.sort(items);
+        mAdapter.setData(items);
+        mNavListener.onNavChanged(isRoot());
+    }
+
+
+    @Override
+    public void onNavigateUp() {
+        fillWithArtists();
+    }
+
+    @Override
+    public String getTitle() {
+        if(isRoot())
+            return "";
+        else
+            return mArtist;
+    }
+
+    @Override
+    public boolean isRoot() {
+        return mRoot;
+    }
+
+
+    //TODO convert to viewholder
+    private class ListItem implements Comparable<ListItem> {
+
+        ListItem(String title, String info) {
+            this.title = title;
+            this.info = info;
+        }
+
+        ListItem(String title, String info, File file) {
+            this(title,info);
+            this.file = file;
+        }
+
+        File file;
+        String title;
+        String info;
+
+        @Override
+        public int compareTo(@NonNull ListItem another) {
+            int comp = this.title.compareTo(another.title);
+            if(comp == 0)
+                comp = this.info.compareTo(another.info);
+
+            return comp;
+        }
+    }
+
+    //TODO use this
+    private static class ViewHolder {
+        TextView title;
+        TextView info;
+    }
+
+    private class ArtistListAdapter extends ArrayAdapter<ListItem> {
+
+        public ArtistListAdapter(Context context) {
+            super(context, R.layout.list_item);
+        }
+
+        public void setData(List<ListItem> items) {
+            clear();
+            addAll(items);
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+
+            LayoutInflater inflater = getActivity().getLayoutInflater();
+            View view = inflater.inflate(R.layout.list_item, parent, false);
+
+            TextView title = (TextView) view.findViewById(R.id.title);
+            TextView info = (TextView) view.findViewById(R.id.info);
+
+            ListItem item = getItem(position);
+            title.setText(item.title);
+            info.setText(item.info);
+
+            return view;
+        }
+
+    }
 }

@@ -13,6 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.cerion.musicplayer.data.AudioFile;
+import org.cerion.musicplayer.data.PlayList;
 import org.cerion.musicplayer.service.AudioService;
 
 import java.io.File;
@@ -25,7 +26,6 @@ import java.util.List;
 public class DirectoryListFragment extends NavigationFragment {
 
     private static final String TAG = DirectoryListFragment.class.getSimpleName();
-    private OnNavigationListener mNavListener;
     private String mRootPath;
     private String mCurrentPath;
     private DirectoryListAdapter mAdapter;
@@ -83,7 +83,15 @@ public class DirectoryListFragment extends NavigationFragment {
     public void onFileSelected(File file) {
         if (AudioFile.isAudioFile(file)) {
             Intent intent = new Intent(getContext(), AudioService.class);
-            intent.putStringArrayListExtra(AudioService.PLAYLIST_FILES, getPlayListFilePaths(file.getAbsolutePath()));
+
+            ArrayList<String> lists = getPlayListFilePaths(file.getAbsolutePath());
+            intent.putStringArrayListExtra(AudioService.PLAYLIST_FILES, lists);
+
+            PlayList pl = new PlayList();
+            pl.addAll(lists);
+            intent.putExtra(AudioService.EXTRA_PLAYLIST, pl);
+
+
             getContext().startService(intent);
 
             intent = new Intent(getContext(), NowPlayingActivity.class);
@@ -123,6 +131,14 @@ public class DirectoryListFragment extends NavigationFragment {
         }
 
         onNavChanged();
+    }
+
+    @Override
+    public String getTitle() {
+        if(isRoot())
+            return "/";
+        else
+            return mCurrentPath.substring(mCurrentPath.lastIndexOf('/') + 1);
     }
 
     public boolean isRoot() {

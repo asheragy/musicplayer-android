@@ -22,6 +22,10 @@ public class AudioFile {
         //mMetaData = new MetaData(mFile);
     }
 
+    public AudioFile(String filePath, String artist, String album, String title) {
+        mFile = new File(filePath);
+        mMetaData = new MetaData(artist, album, title);
+    }
 
     public static boolean isAudioFile(File file) {
         String name = file.getName().toLowerCase();
@@ -30,6 +34,10 @@ public class AudioFile {
 
     public String getPath() {
         return mFile.getAbsolutePath();
+    }
+
+    public File getFile() {
+        return mFile;
     }
 
     public String getTitle() {

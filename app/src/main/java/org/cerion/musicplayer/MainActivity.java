@@ -49,8 +49,9 @@ public class MainActivity extends FragmentActivity implements OnNavigationListen
             public void onClick(View v) {
                 Log.d(TAG, "onclick");
                 //getActionBar().setDisplayHomeAsUpEnabled(false);
-                NavigationFragment navFrag  = (NavigationFragment)mPagerAdapter.getActiveFragment(mViewPager, 0);
+                //NavigationFragment navFrag  = (NavigationFragment)mPagerAdapter.getActiveFragment(mViewPager, 0);
 
+                NavigationFragment navFrag = getCurrentFragment();
                 //Log.d(TAG,f.toString());
                 navFrag.onNavigateUp();
             }
@@ -71,21 +72,13 @@ public class MainActivity extends FragmentActivity implements OnNavigationListen
     }
 
 
-
-
-
-
     @Override
-    protected void onResume() {
-        super.onResume();
-        //registerReceiver(mBroadcastReceiver, AudioStateReceiver.BROADCAST_FILTER_ALL);
+    public void onBackPressed() {
+        if(getCurrentFragment().isRoot())
+            super.onBackPressed();
+        else
+            getCurrentFragment().onNavigateUp();
     }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        //unregisterReceiver(mBroadcastReceiver);
-        }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -102,6 +95,7 @@ public class MainActivity extends FragmentActivity implements OnNavigationListen
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
+        Log.d(TAG,"selected menu");
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
@@ -137,9 +131,21 @@ public class MainActivity extends FragmentActivity implements OnNavigationListen
 
     }
 
+    public NavigationFragment getCurrentFragment() {
+        int position = mViewPager.getCurrentItem();
+        NavigationFragment navFrag  = (NavigationFragment)mPagerAdapter.getActiveFragment(mViewPager, position);
+        return navFrag;
+    }
+
     @Override
     public void onNavChanged(boolean bRoot) {
         getActionBar().setDisplayHomeAsUpEnabled(!bRoot);
+
+        NavigationFragment frag = getCurrentFragment();
+        if(frag != null)
+            getActionBar().setTitle(frag.getTitle());
+        else
+            Log.d(TAG,"null fragment");
     }
 
     private class MyPagerAdapter extends FragmentPagerAdapter {

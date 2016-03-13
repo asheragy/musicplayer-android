@@ -10,6 +10,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 import org.cerion.musicplayer.data.AudioFile;
+import org.cerion.musicplayer.data.PlayList;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,13 +18,17 @@ import java.util.ArrayList;
 public class AudioService extends Service implements MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener {
 
     private static final String TAG = AudioService.class.getSimpleName();
-    public static final String PLAYLIST_FILES = "playListFiles";
+
+    @Deprecated public static final String PLAYLIST_FILES = "playListFiles";
+    public static final String EXTRA_PLAYLIST = "playList";
 
     private MediaPlayer mMediaPlayer = null;
     private boolean mPaused;
     private static AudioService sService;
-    private ArrayList<String> mPlayList;
-    private int mPlayListPosition;
+
+    @Deprecated private ArrayList<String> mPlayListOLD;
+    @Deprecated private int mPlayListPosition;
+    private PlayList mPlayList;
 
     private AudioManager mAudioManager;
     private ComponentName mRemoteControlResponder;
@@ -60,29 +65,31 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
 
     public int onStartCommand(Intent intent, int flags, int startId) {
         sService = this;
-        Log.d(TAG,"onStart State=" + getState());
+        Log.d(TAG, "onStart State=" + getState());
 
         //Every time a new track starts register as the media button receiver in case another app has it
         mAudioManager.registerMediaButtonEventReceiver(mRemoteControlResponder);
 
         //Log.d(TAG,"reading intent");
-        mPlayList = intent.getStringArrayListExtra(PLAYLIST_FILES);
+        mPlayListOLD = intent.getStringArrayListExtra(PLAYLIST_FILES);
         mPlayListPosition = -1;
+        mPlayList = (PlayList)intent.getSerializableExtra(EXTRA_PLAYLIST);
+
         playNextFile();
 
         return START_NOT_STICKY;
     }
 
     private void playNextFile() {
-        mPlayListPosition = (mPlayListPosition + 1) % mPlayList.size();
+        mPlayListPosition = (mPlayListPosition + 1) % mPlayListOLD.size();
         playCurrentFile();
     }
 
     private void playPrevFile() {
         if(mPlayListPosition == 0)
-            mPlayListPosition = mPlayList.size() - 1;
+            mPlayListPosition = mPlayListOLD.size() - 1;
         else
-            mPlayListPosition = (mPlayListPosition - 1) % mPlayList.size();
+            mPlayListPosition = (mPlayListPosition - 1) % mPlayListOLD.size();
         playCurrentFile();
     }
 
@@ -107,7 +114,7 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
     }
 
     private String getCurrentFilePath() {
-        return mPlayList.get(mPlayListPosition % mPlayList.size());
+        return mPlayListOLD.get(mPlayListPosition % mPlayListOLD.size());
     }
 
     /**

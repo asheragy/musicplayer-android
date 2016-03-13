@@ -39,6 +39,8 @@ public class NowPlayingActivity extends AppCompatActivity implements GestureDete
         //onFling to change track
         mDetector = new GestureDetectorCompat(this,this);
 
+        //TODO, if track is paused position shows incorrectly, possibly bug in ControlBar
+
         update();
     }
 
