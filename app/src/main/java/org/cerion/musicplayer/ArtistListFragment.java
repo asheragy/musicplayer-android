@@ -12,12 +12,11 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.cerion.musicplayer.data.AudioFile;
+import org.cerion.musicplayer.data.PlayList;
 import org.cerion.musicplayer.service.AudioService;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -74,34 +73,29 @@ public class ArtistListFragment extends NavigationFragment {
 
     }
 
-    public void onFileSelected(File file) {
-        if (AudioFile.isAudioFile(file)) {
-            Intent intent = new Intent(getContext(), AudioService.class);
-            intent.putStringArrayListExtra(AudioService.PLAYLIST_FILES, getPlayListFilePaths(file.getAbsolutePath()));
-            getContext().startService(intent);
+    public void onFileSelected(AudioFile file) {
 
-            intent = new Intent(getContext(), NowPlayingActivity.class);
-            startActivity(intent);
-        } else {
-            Toast.makeText(getContext(), "Not a valid audio file", Toast.LENGTH_SHORT).show();
-        }
+        Intent intent = new Intent(getContext(), AudioService.class);
+
+        PlayList pl = getPlayList( file );
+        intent.putExtra(AudioService.EXTRA_PLAYLIST, pl);
+        getContext().startService(intent);
+
+        intent = new Intent(getContext(), NowPlayingActivity.class);
+        startActivity(intent);
+
     }
 
-    private ArrayList<String> getPlayListFilePaths(String pathOfFirst) {
+    private PlayList getPlayList(AudioFile currentFile) {
         Database db = Database.getInstance(getContext());
         List<AudioFile> files = db.getFilesForArtist(mArtist);
 
-        ArrayList<String> result = new ArrayList<>();
-
-        for(AudioFile file : files) {
-            String path = file.getFile().getAbsolutePath();
-            if(!path.contentEquals(pathOfFirst))
-                result.add(path);
-        }
+        PlayList result = new PlayList();
+        result.addAll(files);
 
         //Randomize and put first song at the beginning
-        Collections.shuffle(result);
-        result.add(0, pathOfFirst);
+        result.shuffle();
+        result.setCurrentFile(currentFile);
 
         return result;
     }
@@ -139,7 +133,7 @@ public class ArtistListFragment extends NavigationFragment {
 
         List<ListItem> items = new ArrayList<>();
         for(AudioFile file : files) {
-            ListItem item = new ListItem(file.getTitle(), file.getAlbum(), file.getFile());
+            ListItem item = new ListItem(file.getTitle(), file.getAlbum(), file);
             items.add(item);
         }
 
@@ -176,12 +170,12 @@ public class ArtistListFragment extends NavigationFragment {
             this.info = info;
         }
 
-        ListItem(String title, String info, File file) {
+        ListItem(String title, String info, AudioFile file) {
             this(title,info);
             this.file = file;
         }
 
-        File file;
+        AudioFile file;
         String title;
         String info;
 

@@ -2,11 +2,12 @@ package org.cerion.musicplayer.data;
 
 
 import android.media.MediaMetadataRetriever;
+import android.util.Log;
 
 import java.io.File;
+import java.io.Serializable;
 
-public class AudioFile {
-
+public class AudioFile implements Serializable {
     //private static final String TAG = AudioFile.class.getSimpleName();
     private static final MediaMetadataRetriever mmr = new MediaMetadataRetriever();
 
@@ -71,7 +72,12 @@ public class AudioFile {
         return "File: null";
     }
 
-    private class MetaData {
+    public boolean isEqual(AudioFile o) {
+        Log.d("temp", getPath() + "   " + o.getPath());
+        return getPath().contentEquals(o.getPath());
+    }
+
+    private class MetaData implements Serializable {
 
         private final String artist;
         private final String title;

@@ -13,26 +13,20 @@ import org.cerion.musicplayer.data.AudioFile;
 import org.cerion.musicplayer.data.PlayList;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 public class AudioService extends Service implements MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener {
 
     private static final String TAG = AudioService.class.getSimpleName();
 
-    @Deprecated public static final String PLAYLIST_FILES = "playListFiles";
     public static final String EXTRA_PLAYLIST = "playList";
 
     private MediaPlayer mMediaPlayer = null;
     private boolean mPaused;
     private static AudioService sService;
-
-    @Deprecated private ArrayList<String> mPlayListOLD;
-    @Deprecated private int mPlayListPosition;
     private PlayList mPlayList;
 
     private AudioManager mAudioManager;
     private ComponentName mRemoteControlResponder;
-
 
     private final HeadSetReceiver mHeadSetReceiver = new HeadSetReceiver();
 
@@ -71,25 +65,21 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
         mAudioManager.registerMediaButtonEventReceiver(mRemoteControlResponder);
 
         //Log.d(TAG,"reading intent");
-        mPlayListOLD = intent.getStringArrayListExtra(PLAYLIST_FILES);
-        mPlayListPosition = -1;
+        //mPlayListOLD = intent.getStringArrayListExtra(PLAYLIST_FILES);
+        //mPlayListPosition = -1;
         mPlayList = (PlayList)intent.getSerializableExtra(EXTRA_PLAYLIST);
-
-        playNextFile();
+        playCurrentFile();
 
         return START_NOT_STICKY;
     }
 
     private void playNextFile() {
-        mPlayListPosition = (mPlayListPosition + 1) % mPlayListOLD.size();
+        mPlayList.next();
         playCurrentFile();
     }
 
     private void playPrevFile() {
-        if(mPlayListPosition == 0)
-            mPlayListPosition = mPlayListOLD.size() - 1;
-        else
-            mPlayListPosition = (mPlayListPosition - 1) % mPlayListOLD.size();
+        mPlayList.prev();
         playCurrentFile();
     }
 
@@ -113,8 +103,10 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
         mMediaPlayer.prepareAsync();
     }
 
+    @Deprecated
     private String getCurrentFilePath() {
-        return mPlayListOLD.get(mPlayListPosition % mPlayListOLD.size());
+        //return mPlayListOLD.get(mPlayListPosition % mPlayListOLD.size());
+        return mPlayList.getCurrentFilePath();
     }
 
     /**

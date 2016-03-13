@@ -19,7 +19,6 @@ import org.cerion.musicplayer.service.AudioService;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 
@@ -42,8 +41,7 @@ public class DirectoryListFragment extends NavigationFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.directory_list_fragment, container, false);
-        return view;
+        return inflater.inflate(R.layout.directory_list_fragment, container, false);
     }
 
     @Override
@@ -84,13 +82,7 @@ public class DirectoryListFragment extends NavigationFragment {
         if (AudioFile.isAudioFile(file)) {
             Intent intent = new Intent(getContext(), AudioService.class);
 
-            ArrayList<String> lists = getPlayListFilePaths(file.getAbsolutePath());
-            intent.putStringArrayListExtra(AudioService.PLAYLIST_FILES, lists);
-
-            PlayList pl = new PlayList();
-            pl.addAll(lists);
-            intent.putExtra(AudioService.EXTRA_PLAYLIST, pl);
-
+            intent.putExtra(AudioService.EXTRA_PLAYLIST, getPlayList(file));
 
             getContext().startService(intent);
 
@@ -101,26 +93,23 @@ public class DirectoryListFragment extends NavigationFragment {
         }
     }
 
+    private PlayList getPlayList(File currentFile) {
 
-    private ArrayList<String> getPlayListFilePaths(String pathOfFirst) {
+        PlayList result = new PlayList();
+
         List<File> files = getFiles();
-        ArrayList<String> result = new ArrayList<>();
-
         for(File file : files) {
             if(AudioFile.isAudioFile(file)) {
-                String path = file.getAbsolutePath();
-                if(!path.contentEquals(pathOfFirst))
-                    result.add(path);
+                result.add( new AudioFile(file) );
             }
         }
 
-        //Randomize and put first song at the beginning
-        Collections.shuffle(result);
-        result.add(0, pathOfFirst);
+        //Randomize and set current song
+        result.shuffle();
+        result.setCurrentFile(new AudioFile(currentFile));
 
         return result;
     }
-
 
     @Override
     public void onNavigateUp() {
