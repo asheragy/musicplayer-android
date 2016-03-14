@@ -12,7 +12,7 @@ import java.util.List;
 public class PlayList implements Serializable {
 
     private static final String TAG = PlayList.class.getSimpleName();
-    private List<AudioFile> mFileList = new ArrayList<>();
+    private final List<AudioFile> mFileList = new ArrayList<>();
     private int mPosition = 0;
 
     public PlayList() {

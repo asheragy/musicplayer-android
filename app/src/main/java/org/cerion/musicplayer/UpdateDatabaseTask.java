@@ -10,18 +10,18 @@ import org.cerion.musicplayer.data.AudioFile;
 import java.io.File;
 
 
-public class UpdateDatabaseTask extends AsyncTask<Void,Void,Void> {
+class UpdateDatabaseTask extends AsyncTask<Void,Void,Void> {
 
     private static final String TAG = UpdateDatabaseTask.class.getSimpleName();
 
-    String mStatus;
-    Context mContext;
-    Database mDb;
-    ProgressDialog m_pd;
-    String mRootPath;
+    private String mStatus;
+    //Context mContext;
+    private final Database mDb;
+    private final ProgressDialog m_pd;
+    private final String mRootPath;
 
     public UpdateDatabaseTask(Context context, String rootPath) {
-        mContext = context;
+        //mContext = context;
         mDb = Database.getInstance(context);
         mRootPath = rootPath;
 
@@ -60,7 +60,7 @@ public class UpdateDatabaseTask extends AsyncTask<Void,Void,Void> {
 
     }
 
-    protected void update(String status)
+    private void update(String status)
     {
         mStatus = status;
         publishProgress();

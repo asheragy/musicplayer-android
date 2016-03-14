@@ -91,7 +91,7 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
         }
         mPaused = false;
 
-        String file = getCurrentFilePath();
+        String file = mPlayList.getCurrentFilePath();
         Log.d(TAG, "playing = " + file);
 
         try {
@@ -101,12 +101,6 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
         }
 
         mMediaPlayer.prepareAsync();
-    }
-
-    @Deprecated
-    private String getCurrentFilePath() {
-        //return mPlayListOLD.get(mPlayListPosition % mPlayListOLD.size());
-        return mPlayList.getCurrentFilePath();
     }
 
     /**
@@ -200,7 +194,7 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
 
     public static AudioFile getActiveFile() {
         if(sService != null)
-            return new AudioFile(sService.getCurrentFilePath());
+            return new AudioFile(sService.mPlayList.getCurrentFilePath());
 
         return null;
     }

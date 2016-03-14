@@ -36,9 +36,10 @@ public class MainActivity extends FragmentActivity implements OnNavigationListen
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setActionBar(toolbar);
 
-        getActionBar().setDisplayHomeAsUpEnabled(true);
-        getActionBar().setDisplayShowHomeEnabled(true);
-
+        if(getActionBar() != null) {
+            getActionBar().setDisplayHomeAsUpEnabled(true);
+            getActionBar().setDisplayShowHomeEnabled(true);
+        }
 
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -102,15 +103,15 @@ public class MainActivity extends FragmentActivity implements OnNavigationListen
         return super.onOptionsItemSelected(item);
     }
 
-    public NavigationFragment getCurrentFragment() {
+    private NavigationFragment getCurrentFragment() {
         int position = mViewPager.getCurrentItem();
-        NavigationFragment navFrag  = (NavigationFragment)mPagerAdapter.getActiveFragment(mViewPager, position);
-        return navFrag;
+        return (NavigationFragment)mPagerAdapter.getActiveFragment(mViewPager, position);
     }
 
     @Override
     public void onNavChanged(boolean bRoot) {
-        getActionBar().setDisplayHomeAsUpEnabled(!bRoot);
+        if(getActionBar() != null)
+            getActionBar().setDisplayHomeAsUpEnabled(!bRoot);
 
         NavigationFragment frag = getCurrentFragment();
         if(frag != null)
@@ -121,7 +122,7 @@ public class MainActivity extends FragmentActivity implements OnNavigationListen
 
     private class MyPagerAdapter extends FragmentPagerAdapter {
 
-        private FragmentManager mFragmentManager;
+        private final FragmentManager mFragmentManager;
         private static final int NUM_PAGES = 2;
 
         public MyPagerAdapter(FragmentManager fm) {
@@ -174,7 +175,7 @@ public class MainActivity extends FragmentActivity implements OnNavigationListen
     }
 
 
-    public void onUpdateDatabase()
+    private void onUpdateDatabase()
     {
         Log.d(TAG, "onUpdateDatabase");
         UpdateDatabaseTask mTask = new UpdateDatabaseTask(this,mRootPath);

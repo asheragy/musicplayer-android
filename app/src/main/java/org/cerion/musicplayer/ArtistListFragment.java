@@ -73,7 +73,7 @@ public class ArtistListFragment extends NavigationFragment {
 
     }
 
-    public void onFileSelected(AudioFile file) {
+    private void onFileSelected(AudioFile file) {
 
         Intent intent = new Intent(getContext(), AudioService.class);
 
@@ -162,7 +162,7 @@ public class ArtistListFragment extends NavigationFragment {
     }
 
 
-    //TODO convert to viewholder
+    //TODO convert to view holder
     private class ListItem implements Comparable<ListItem> {
 
         ListItem(String title, String info) {

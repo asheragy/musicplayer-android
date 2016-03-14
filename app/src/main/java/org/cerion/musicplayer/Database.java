@@ -44,7 +44,7 @@ public class Database extends SQLiteOpenHelper {
     private static final String _ALBUM = "album";
     private static final String _TITLE = "title";
 
-    public static final String SQL_CREATE = "create table " + TABLE + "("
+    private static final String SQL_CREATE = "create table " + TABLE + "("
             + _PATH + " TEXT PRIMARY KEY NOT NULL, "
             + _ARTIST + " TEXT, "
             + _ALBUM + " TEXT, "

@@ -73,12 +73,11 @@ public class DirectoryListFragment extends NavigationFragment {
         setDirectory(mRootPath);
     }
 
-    public void onNavChanged() {
+    private void onNavChanged() {
         mNavListener.onNavChanged(isRoot());
     }
 
-
-    public void onFileSelected(File file) {
+    private void onFileSelected(File file) {
         if (AudioFile.isAudioFile(file)) {
             Intent intent = new Intent(getContext(), AudioService.class);
 
@@ -153,7 +152,7 @@ public class DirectoryListFragment extends NavigationFragment {
         return result;
     }
 
-    public List<File> getFiles() {
+    private List<File> getFiles() {
         List<File> result = new ArrayList<>();
 
         for(int i = 0; i < mAdapter.getCount(); i++) {

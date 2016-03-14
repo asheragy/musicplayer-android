@@ -1,6 +1,6 @@
 package org.cerion.musicplayer;
 
-public interface OnNavigationListener {
+interface OnNavigationListener {
 
     void onNavChanged(boolean bRoot);
 

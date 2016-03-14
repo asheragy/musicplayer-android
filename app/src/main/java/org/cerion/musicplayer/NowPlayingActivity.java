@@ -47,9 +47,11 @@ public class NowPlayingActivity extends AppCompatActivity implements GestureDete
     private void update() {
         AudioFile af = AudioService.getActiveFile();
 
-        mTitle.setText(af.getTitle());
-        mArtist.setText(af.getArtist());
-        mAlbum.setText(af.getAlbum());
+        if(af != null) {
+            mTitle.setText(af.getTitle());
+            mArtist.setText(af.getArtist());
+            mAlbum.setText(af.getAlbum());
+        }
     }
 
 
@@ -58,7 +60,7 @@ public class NowPlayingActivity extends AppCompatActivity implements GestureDete
         super.onResume();
         registerReceiver(mBroadcastReceiver, AudioStateReceiver.BROADCAST_FILTER_ALL);
 
-        update(); //incase track changed since last pause
+        update(); //in case track changed since last pause
     }
 
     @Override

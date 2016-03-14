@@ -5,7 +5,7 @@ import android.support.v4.app.ListFragment;
 
 public abstract class NavigationFragment extends ListFragment {
 
-    protected OnNavigationListener mNavListener;
+    OnNavigationListener mNavListener;
 
     public abstract void onNavigateUp();
     public abstract String getTitle();

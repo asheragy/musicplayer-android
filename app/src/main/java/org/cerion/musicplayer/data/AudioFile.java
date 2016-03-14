@@ -37,10 +37,6 @@ public class AudioFile implements Serializable {
         return mFile.getAbsolutePath();
     }
 
-    public File getFile() {
-        return mFile;
-    }
-
     public String getTitle() {
         if(mMetaData == null)
             mMetaData = new MetaData(mFile);
