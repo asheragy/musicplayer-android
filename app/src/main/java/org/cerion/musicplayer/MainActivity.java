@@ -16,10 +16,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toolbar;
 
-import org.cerion.musicplayer.data.AudioFile;
-
-import java.io.File;
-
 public class MainActivity extends FragmentActivity implements OnNavigationListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -100,35 +96,10 @@ public class MainActivity extends FragmentActivity implements OnNavigationListen
         if (id == R.id.action_settings) {
             return true;
         } else if(id == R.id.action_refresh) {
-            onRefresh();
+            onUpdateDatabase();
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    private void onRefresh() {
-        Log.d(TAG,"onRefresh");
-        Database db = Database.getInstance(this);
-        db.reset();
-
-        addFilesInDirectory(new File(mRootPath),db);
-
-        db.log();
-    }
-
-    private void addFilesInDirectory(File dir, Database db) {
-        File files[] = dir.listFiles();
-
-        for(File f : files) {
-            if(f.isDirectory())
-                addFilesInDirectory(f,db);
-            else if(AudioFile.isAudioFile(f)) {
-                AudioFile af = new AudioFile(f);
-                db.add(af);
-            }
-
-        }
-
     }
 
     public NavigationFragment getCurrentFragment() {
@@ -202,6 +173,13 @@ public class MainActivity extends FragmentActivity implements OnNavigationListen
 
     }
 
+
+    public void onUpdateDatabase()
+    {
+        Log.d(TAG, "onUpdateDatabase");
+        UpdateDatabaseTask mTask = new UpdateDatabaseTask(this,mRootPath);
+        mTask.execute();
+    }
 
     /*
     private static final int PERMISSION_READ_STORAGE = 0;
