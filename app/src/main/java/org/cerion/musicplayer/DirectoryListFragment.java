@@ -14,6 +14,10 @@ import android.widget.Toast;
 
 import org.cerion.musicplayer.data.AudioFile;
 import org.cerion.musicplayer.data.PlayList;
+import org.cerion.musicplayer.navigation.NavigationFragment;
+import org.cerion.musicplayer.navigation.NavigationListAdapter;
+import org.cerion.musicplayer.navigation.NavigationListItem;
+import org.cerion.musicplayer.navigation.OnNavigationListener;
 import org.cerion.musicplayer.service.AudioService;
 
 import java.io.File;
@@ -27,7 +31,7 @@ public class DirectoryListFragment extends NavigationFragment {
     private static final String TAG = DirectoryListFragment.class.getSimpleName();
     private String mRootPath;
     private String mCurrentPath;
-    private DirectoryListAdapter mAdapter;
+    private NavigationListAdapter mAdapter;
 
     public DirectoryListFragment() {
 
@@ -49,22 +53,20 @@ public class DirectoryListFragment extends NavigationFragment {
         super.onViewCreated(view, savedInstanceState);
 
         mRootPath = MainActivity.mRootPath;
-        mAdapter = new DirectoryListAdapter(getContext());
+        mAdapter = new NavigationListAdapter(getContext());
         setListAdapter(mAdapter);
 
         getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                File file = mAdapter.getItem(position);
+                NavigationListItem item = mAdapter.getItem(position);
                 //String path = file.getAbsolutePath();
                 //Log.d(TAG, "onClick " + path);
 
-                if (file.isDirectory()) {
-                    mCurrentPath = file.getAbsolutePath();
-                    setDirectory(mCurrentPath);
-
+                if (item.isFolder()) {
+                    setDirectory(item.file.getAbsolutePath());
                 } else {
-                    onFileSelected(file);
+                    onFileSelected(item.file);
                 }
 
             }
@@ -115,10 +117,9 @@ public class DirectoryListFragment extends NavigationFragment {
         if(isRoot())
             Log.e(TAG, "cannot navigate up on root");
         else {
-            getListView().performItemClick(getListView(), 0, 0);
+            File file = new File(mCurrentPath);
+            setDirectory(file.getParent());
         }
-
-        onNavChanged();
     }
 
     @Override
@@ -135,7 +136,20 @@ public class DirectoryListFragment extends NavigationFragment {
 
     private void setDirectory(String path) {
         Log.d(TAG, "nav -> " + path);
-        mAdapter.setData(getDirectoryListing(path));
+        mCurrentPath = path;
+
+        List<File> files = getDirectoryListing(path);
+
+        List<NavigationListItem> items = new ArrayList<>();
+        for(File file : files) {
+            String info = "";
+            if(file.isDirectory()) {
+                info = file.listFiles().length + " files";
+            }
+            NavigationListItem item = new NavigationListItem(file.getName(),info,file);
+            items.add(item);
+        }
+        mAdapter.setData(items);
 
         onNavChanged();
     }
@@ -156,7 +170,7 @@ public class DirectoryListFragment extends NavigationFragment {
         List<File> result = new ArrayList<>();
 
         for(int i = 0; i < mAdapter.getCount(); i++) {
-            File f = mAdapter.getItem(i);
+            File f = mAdapter.getItem(i).file;
             if(f.isFile())
                 result.add(f);
         }
@@ -165,6 +179,7 @@ public class DirectoryListFragment extends NavigationFragment {
     }
 
 
+    /*
     private class DirectoryListAdapter extends ArrayAdapter<File> {
 
         public DirectoryListAdapter(Context context) {
@@ -197,4 +212,5 @@ public class DirectoryListFragment extends NavigationFragment {
         }
 
     }
+    */
 }

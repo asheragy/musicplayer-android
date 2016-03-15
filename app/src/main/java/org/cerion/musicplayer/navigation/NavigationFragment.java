@@ -1,11 +1,13 @@
-package org.cerion.musicplayer;
+package org.cerion.musicplayer.navigation;
 
 
 import android.support.v4.app.ListFragment;
 
+import org.cerion.musicplayer.navigation.OnNavigationListener;
+
 public abstract class NavigationFragment extends ListFragment {
 
-    OnNavigationListener mNavListener;
+    public OnNavigationListener mNavListener;
 
     public abstract void onNavigateUp();
     public abstract String getTitle();

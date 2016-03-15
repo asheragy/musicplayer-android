@@ -4,6 +4,7 @@ package org.cerion.musicplayer;
 import android.os.Bundle;
 import android.os.Environment;
 
+import android.os.StrictMode;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -15,6 +16,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toolbar;
+
+import org.cerion.musicplayer.navigation.NavigationFragment;
+import org.cerion.musicplayer.navigation.OnNavigationListener;
 
 public class MainActivity extends FragmentActivity implements OnNavigationListener {
 
@@ -61,13 +65,29 @@ public class MainActivity extends FragmentActivity implements OnNavigationListen
         mPagerAdapter = new MyPagerAdapter(getSupportFragmentManager());
         mViewPager.setAdapter(mPagerAdapter);
 
-
-
         //Add tabs
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
+
+
+        //enableStrictMode();
     }
 
+    private void enableStrictMode() {
+
+        StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+                .detectDiskReads()
+                .detectDiskWrites()
+                .detectNetwork()   // or .detectAll() for all detectable problems
+                .penaltyLog()
+                .build());
+        StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
+                .detectLeakedSqlLiteObjects()
+                .detectLeakedClosableObjects()
+                .penaltyLog()
+                .penaltyDeath()
+                .build());
+    }
 
     @Override
     public void onBackPressed() {
