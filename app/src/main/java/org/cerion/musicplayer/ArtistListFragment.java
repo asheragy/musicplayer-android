@@ -3,6 +3,7 @@ package org.cerion.musicplayer;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import android.view.LayoutInflater;
@@ -18,7 +19,9 @@ import org.cerion.musicplayer.navigation.NavigationListItem;
 import org.cerion.musicplayer.navigation.OnNavigationListener;
 import org.cerion.musicplayer.service.AudioService;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -104,43 +107,20 @@ public class ArtistListFragment extends NavigationFragment {
 
     private void fillWithArtists() {
         mRoot = true;
-        Database db = Database.getInstance(getContext());
-
-        List<NavigationListItem> items = new ArrayList<>();
-        Map<String,Integer> map = db.getArtists();
-
-        Iterator it = map.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry)it.next();
-            //String name = pair.getKey() + " - " + pair.getValue();
-
-            NavigationListItem item = new NavigationListItem("" + pair.getKey(), "" + pair.getValue());
-            items.add(item);
-            it.remove();
-        }
-
-        Collections.sort(items);
-
-        mAdapter.setData(items);
+        mAdapter.empty();
         mNavListener.onNavChanged(isRoot());
+
+        UpdateListTask updateTask = new UpdateListTask();
+        updateTask.execute();
     }
 
     private void fillWithArtist(String artist) {
         mRoot = false;
         mArtist = artist;
-
-        Database db = Database.getInstance(getContext());
-        List<AudioFile> files = db.getFilesForArtist(artist);
-
-        List<NavigationListItem> items = new ArrayList<>();
-        for(AudioFile file : files) {
-            NavigationListItem item = new NavigationListItem(file.getTitle(), file.getAlbum(), file);
-            items.add(item);
-        }
-
-        //already sorted by title Collections.sort(items);
-        mAdapter.setData(items);
         mNavListener.onNavChanged(isRoot());
+
+        UpdateListTask updateTask = new UpdateListTask(artist);
+        updateTask.execute();
     }
 
 
@@ -163,5 +143,65 @@ public class ArtistListFragment extends NavigationFragment {
     }
 
 
+
+    private class UpdateListTask extends AsyncTask<Void,Void,Void> {
+
+        List<NavigationListItem> items = new ArrayList<>();
+        String mArtist = null;
+
+        public UpdateListTask() {
+            //Update list with artists
+        }
+
+        public UpdateListTask(String artist) {
+            mArtist = artist;
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+
+            if(mArtist == null)
+                setArtists();
+            else
+                setArtist(mArtist);
+
+            Collections.sort(items);
+            return null;
+        }
+
+        public void setArtists() {
+
+            Database db = Database.getInstance(getContext());
+            Map<String,Integer> map = db.getArtists();
+
+            Iterator it = map.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry pair = (Map.Entry)it.next();
+                //String name = pair.getKey() + " - " + pair.getValue();
+
+                NavigationListItem item = new NavigationListItem("" + pair.getKey(), "" + pair.getValue());
+                items.add(item);
+                it.remove();
+            }
+        }
+
+        public void setArtist(String artist) {
+
+            Database db = Database.getInstance(getContext());
+            List<AudioFile> files = db.getFilesForArtist(artist);
+
+            for(AudioFile file : files) {
+                NavigationListItem item = new NavigationListItem(file.getTitle(), file.getAlbum(), file);
+                items.add(item);
+            }
+
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            mAdapter.setData(items);
+        }
+    }
 
 }

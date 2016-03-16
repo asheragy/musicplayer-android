@@ -1,6 +1,7 @@
 package org.cerion.musicplayer;
 
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 
@@ -70,7 +71,7 @@ public class MainActivity extends FragmentActivity implements OnNavigationListen
         tabLayout.setupWithViewPager(mViewPager);
 
 
-        //enableStrictMode();
+        enableStrictMode();
     }
 
     private void enableStrictMode() {
@@ -201,6 +202,7 @@ public class MainActivity extends FragmentActivity implements OnNavigationListen
         UpdateDatabaseTask mTask = new UpdateDatabaseTask(this,mRootPath);
         mTask.execute();
     }
+
 
     /*
     private static final int PERMISSION_READ_STORAGE = 0;

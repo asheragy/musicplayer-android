@@ -99,6 +99,30 @@ public class Database extends SQLiteOpenHelper {
         return result;
     }
 
+    public Map<String,AudioFile> getFilesInPath(String path) {
+        SQLiteDatabase db = getReadableDatabase();
+        String query = String.format("SELECT * FROM %s WHERE %s LIKE '%s/%%' AND %s NOT LIKE '%s/%%/%%'", TABLE, _PATH, path, _PATH, path);
+
+        Map<String,AudioFile> map = new HashMap<>();
+        Cursor c = db.rawQuery(query, null);
+
+        if(c != null) {
+            while (c.moveToNext()) {
+                String filePath = c.getString(c.getColumnIndexOrThrow(_PATH));
+                String artist = c.getString(c.getColumnIndexOrThrow(_ARTIST));
+                String album = c.getString(c.getColumnIndexOrThrow(_ALBUM));
+                String title = c.getString(c.getColumnIndexOrThrow(_TITLE));
+
+                AudioFile af = new AudioFile(filePath, artist, album, title);
+                map.put(filePath,af);
+            }
+            c.close();
+        }
+
+        db.close();
+        return map;
+    }
+
     public List<AudioFile> getFilesForArtist(String artist) {
         SQLiteDatabase db = getReadableDatabase();
         List<AudioFile> result = new ArrayList<>();

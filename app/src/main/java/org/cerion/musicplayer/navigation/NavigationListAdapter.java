@@ -27,6 +27,11 @@ public class NavigationListAdapter extends ArrayAdapter<NavigationListItem>  {
         notifyDataSetChanged();
     }
 
+    public void empty() {
+        clear();
+        notifyDataSetChanged();
+    }
+
     private static class ViewHolder {
         TextView title;
         TextView info;

@@ -2,14 +2,13 @@ package org.cerion.musicplayer;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import org.cerion.musicplayer.data.AudioFile;
@@ -23,7 +22,9 @@ import org.cerion.musicplayer.service.AudioService;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 
 public class DirectoryListFragment extends NavigationFragment {
@@ -138,32 +139,13 @@ public class DirectoryListFragment extends NavigationFragment {
         Log.d(TAG, "nav -> " + path);
         mCurrentPath = path;
 
-        List<File> files = getDirectoryListing(path);
-
-        List<NavigationListItem> items = new ArrayList<>();
-        for(File file : files) {
-            String info = "";
-            if(file.isDirectory()) {
-                info = file.listFiles().length + " files";
-            }
-            NavigationListItem item = new NavigationListItem(file.getName(),info,file);
-            items.add(item);
-        }
-        mAdapter.setData(items);
-
+        //Clear current contents
+        mAdapter.empty();
         onNavChanged();
-    }
 
-    private List<File> getDirectoryListing(String directory) {
-        List<File> result = new ArrayList<>();
-
-        File dir = new File(directory);
-        File files[] = dir.listFiles();
-        Arrays.sort(files);
-
-        //Log.d("Files", "Size: " + length + " " + f.getAbsolutePath());
-        result.addAll(Arrays.asList(files));
-        return result;
+        //Update in background
+        UpdateListTask updateTask = new UpdateListTask();
+        updateTask.execute();
     }
 
     private List<File> getFiles() {
@@ -178,6 +160,57 @@ public class DirectoryListFragment extends NavigationFragment {
         return result;
     }
 
+
+    private class UpdateListTask extends AsyncTask<Void,Void,Void> {
+
+        List<NavigationListItem> items = new ArrayList<>();
+
+        @Override
+        protected Void doInBackground(Void... params) {
+
+            List<File> files = getDirectoryListing(mCurrentPath);
+            Database db = Database.getInstance(getContext());
+            Map<String,AudioFile> map = db.getFilesInPath(mCurrentPath);
+
+            for(File file : files) {
+                String info = "";
+                String title = file.getName();
+
+                if(file.isDirectory()) {
+                    info = file.listFiles().length + " files";
+                } else if(map.containsKey(file.getPath())) {
+                    AudioFile audioFile = map.get(file.getPath());
+                    if(audioFile.getTitle().length() > 0)
+                        title = audioFile.getTitle();
+                    info = String.format("%s - %s", audioFile.getArtist(), audioFile.getAlbum());
+                }
+
+                NavigationListItem item = new NavigationListItem(title,info,file);
+                items.add(item);
+            }
+
+            Collections.sort(items);
+            return null;
+        }
+
+        private List<File> getDirectoryListing(String directory) {
+            List<File> result = new ArrayList<>();
+
+            File dir = new File(directory);
+            File files[] = dir.listFiles();
+            //Arrays.sort(files);
+
+            //Log.d("Files", "Size: " + length + " " + f.getAbsolutePath());
+            result.addAll(Arrays.asList(files));
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            mAdapter.setData(items);
+        }
+    }
 
     /*
     private class DirectoryListAdapter extends ArrayAdapter<File> {
