@@ -191,7 +191,12 @@ public class ArtistListFragment extends NavigationFragment {
             List<AudioFile> files = db.getFilesForArtist(artist);
 
             for(AudioFile file : files) {
-                NavigationListItem item = new NavigationListItem(file.getTitle(), file.getAlbum(), file);
+                String title = file.getTitle();
+                String info = file.getAlbum();
+                if(title.length() == 0)
+                    title = file.getFilename();
+
+                NavigationListItem item = new NavigationListItem(title, info, file);
                 items.add(item);
             }
 

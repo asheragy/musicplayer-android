@@ -37,6 +37,10 @@ public class AudioFile implements Serializable {
         return mFile.getAbsolutePath();
     }
 
+    public String getFilename() {
+        return mFile.getName();
+    }
+
     public String getTitle() {
         if(mMetaData == null)
             mMetaData = new MetaData(mFile);
@@ -88,9 +92,9 @@ public class AudioFile implements Serializable {
         }
 
         MetaData(String artist, String album, String title) {
-            this.artist = artist;
-            this.album = album;
-            this.title = title;
+            this.artist = (artist != null ? artist : "");
+            this.album = (album != null ? album : "");
+            this.title = (title != null ? title : "");
         }
 
     }

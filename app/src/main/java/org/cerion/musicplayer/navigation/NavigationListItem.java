@@ -49,6 +49,8 @@ public class NavigationListItem implements Comparable<NavigationListItem> {
         int comp = 0;
         if(isFolder() != another.isFolder()) //list folders first
             comp = (isFolder() ? -1 : 1);
+        //if(comp == 0 && !isFolder() && !another.isFolder() && ((audioFile == null && another.audioFile != null) || (audioFile != null && another.audioFile == null)))
+        //    comp = (audioFile != null ? -1 : 1);
         if(comp == 0)
             comp = this.title.compareTo(another.title);
         if(comp == 0)

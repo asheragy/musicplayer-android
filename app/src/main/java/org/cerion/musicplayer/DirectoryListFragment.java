@@ -182,7 +182,13 @@ public class DirectoryListFragment extends NavigationFragment {
                     AudioFile audioFile = map.get(file.getPath());
                     if(audioFile.getTitle().length() > 0)
                         title = audioFile.getTitle();
-                    info = String.format("%s - %s", audioFile.getArtist(), audioFile.getAlbum());
+
+                    if(audioFile.getAlbum().length() == 0)
+                        info = audioFile.getArtist();
+                    else if(audioFile.getArtist().length() == 0)
+                        info = audioFile.getAlbum();
+                    else
+                        info = String.format("%s - %s", audioFile.getArtist(), audioFile.getAlbum());
                 }
 
                 NavigationListItem item = new NavigationListItem(title,info,file);
