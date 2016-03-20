@@ -11,8 +11,8 @@ public class NavigationListItem implements Comparable<NavigationListItem> {
 
     public AudioFile audioFile;
     public File file;
-    public String title;
-    public String info;
+    public final String title;
+    public final String info;
     private boolean isFolder;
 
     public NavigationListItem(String title, String info) {

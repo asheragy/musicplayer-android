@@ -31,6 +31,10 @@ public class PlayList implements Serializable {
         return mFileList.get(mPosition % mFileList.size()).getPath();
     }
 
+    public AudioFile getCurrentAudioFile() {
+        return mFileList.get(mPosition % mFileList.size());
+    }
+
     public void next() {
         mPosition = (mPosition + 1) % mFileList.size();
     }

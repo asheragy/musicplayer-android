@@ -1,7 +1,6 @@
 package org.cerion.musicplayer;
 
 
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 
@@ -70,8 +69,8 @@ public class MainActivity extends FragmentActivity implements OnNavigationListen
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
-
-        enableStrictMode();
+        
+        //enableStrictMode();
     }
 
     private void enableStrictMode() {
@@ -135,10 +134,10 @@ public class MainActivity extends FragmentActivity implements OnNavigationListen
             getActionBar().setDisplayHomeAsUpEnabled(!bRoot);
 
         NavigationFragment frag = getCurrentFragment();
-        if(frag != null)
+        if(frag != null && getActionBar() != null)
             getActionBar().setTitle(frag.getTitle());
         else
-            Log.d(TAG,"null fragment");
+            Log.e(TAG,"null fragment or actionBar");
     }
 
     private class MyPagerAdapter extends FragmentPagerAdapter {

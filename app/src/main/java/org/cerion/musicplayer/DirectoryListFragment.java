@@ -85,7 +85,6 @@ public class DirectoryListFragment extends NavigationFragment {
             Intent intent = new Intent(getContext(), AudioService.class);
 
             intent.putExtra(AudioService.EXTRA_PLAYLIST, getPlayList(file));
-
             getContext().startService(intent);
 
             intent = new Intent(getContext(), NowPlayingActivity.class);
@@ -163,7 +162,7 @@ public class DirectoryListFragment extends NavigationFragment {
 
     private class UpdateListTask extends AsyncTask<Void,Void,Void> {
 
-        List<NavigationListItem> items = new ArrayList<>();
+        private final List<NavigationListItem> items = new ArrayList<>();
 
         @Override
         protected Void doInBackground(Void... params) {
@@ -216,6 +215,8 @@ public class DirectoryListFragment extends NavigationFragment {
             super.onPostExecute(aVoid);
             mAdapter.setData(items);
         }
+
+
     }
 
     /*

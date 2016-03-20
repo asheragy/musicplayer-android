@@ -19,9 +19,7 @@ import org.cerion.musicplayer.navigation.NavigationListItem;
 import org.cerion.musicplayer.navigation.OnNavigationListener;
 import org.cerion.musicplayer.service.AudioService;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -146,7 +144,7 @@ public class ArtistListFragment extends NavigationFragment {
 
     private class UpdateListTask extends AsyncTask<Void,Void,Void> {
 
-        List<NavigationListItem> items = new ArrayList<>();
+        final List<NavigationListItem> items = new ArrayList<>();
         String mArtist = null;
 
         public UpdateListTask() {

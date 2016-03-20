@@ -7,7 +7,7 @@ import org.cerion.musicplayer.navigation.OnNavigationListener;
 
 public abstract class NavigationFragment extends ListFragment {
 
-    public OnNavigationListener mNavListener;
+    protected OnNavigationListener mNavListener;
 
     public abstract void onNavigateUp();
     public abstract String getTitle();
