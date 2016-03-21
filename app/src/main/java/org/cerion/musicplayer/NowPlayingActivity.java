@@ -44,7 +44,16 @@ public class NowPlayingActivity extends AppCompatActivity implements GestureDete
         update();
     }
 
+    private boolean mUpdated = false;
     private void update() {
+
+        //Finish activity is music is stopped, on create this gets called too soon so ignore state the first time
+        if(mUpdated && AudioService.getState() == AudioService.STATE_STOPPED) {
+            finish();
+            return;
+        }
+
+        mUpdated = true;
         AudioFile af = AudioService.getActiveFile();
 
         if(af != null) {

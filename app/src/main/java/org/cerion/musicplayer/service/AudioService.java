@@ -44,19 +44,23 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
     }
 
     public AudioService() {
-        mMediaPlayer = new MediaPlayer();
-        mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        mMediaPlayer.setOnPreparedListener(this);
-        mMediaPlayer.setOnCompletionListener(this);
+
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
 
+        mMediaPlayer = new MediaPlayer();
+        mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        mMediaPlayer.setOnPreparedListener(this);
+        mMediaPlayer.setOnCompletionListener(this);
+
+        //For registering as default media receiver
         mAudioManager = (AudioManager)getSystemService(AUDIO_SERVICE);
         mRemoteControlResponder = new ComponentName(this, HeadSetReceiver.class);
 
+        //Detect headset plugged/unplugged
         IntentFilter filter = new IntentFilter(Intent.ACTION_HEADSET_PLUG);
         registerReceiver(mHeadSetReceiver, filter);
     }
@@ -105,12 +109,8 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
 
         String action = (intent.getAction() != null ? intent.getAction() : "");
 
-        if(action.contentEquals(ACTION_STOP)) { //TODO, make function like back/next
-            //mNotification.cancel();
-            mMediaPlayer.stop(); //stopSelf does not seem to end this one
-            broadcastUpdate();
-            stopForeground(true);
-            stopSelf();
+        if(action.contentEquals(ACTION_STOP)) {
+            sService.stop();
         } else if(action.contentEquals(ACTION_BACK)) {
             sService.playPrevFile();
         } else if(action.contentEquals(ACTION_NEXT)) {
@@ -131,6 +131,13 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
 
 
         return START_NOT_STICKY;
+    }
+
+    private void stop() {
+        mMediaPlayer.stop();
+        broadcastUpdate();
+        stopForeground(true);
+        stopSelf();
     }
 
     private void playNextFile() {
@@ -189,6 +196,8 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
         mMediaPlayer.stop();
         mMediaPlayer.reset();
 
+        //TODO, if playlist is over, end service
+
         //Start next file
         playNextFile();
 
@@ -216,10 +225,12 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
+        Log.d(TAG,"onDestroy");
+
+        mMediaPlayer.release();
         unregisterReceiver(mHeadSetReceiver);
         sService = null;
-        Log.d(TAG,"onDestroy");
+        super.onDestroy();
     }
 
     //----------------- Static control methods -----------------
