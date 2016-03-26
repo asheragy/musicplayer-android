@@ -46,9 +46,9 @@ public class Database extends SQLiteOpenHelper {
 
     private static final String SQL_CREATE = "create table " + TABLE + "("
             + _PATH + " TEXT PRIMARY KEY NOT NULL, "
-            + _ARTIST + " TEXT, "
-            + _ALBUM + " TEXT, "
-            + _TITLE + " TEXT"
+            + _ARTIST + " TEXT NOT NULL, "
+            + _ALBUM + " TEXT NOT NULL, "
+            + _TITLE + " TEXT NOT NULL"
             + ")";
 
     @Override
@@ -78,6 +78,30 @@ public class Database extends SQLiteOpenHelper {
         values.put(_TITLE, audioFile.getTitle());
 
         db.insert(TABLE, null, values);
+        db.close();
+    }
+
+    public void delete(AudioFile audioFile) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(_PATH, audioFile.getPath());
+
+        int result = db.delete(TABLE,_PATH + "=?", new String[] {audioFile.getPath()});
+        Log.d(TAG,"result = " + result);
+        db.close();
+    }
+
+    public void replaceArtist(String oldName, String newName) {
+        Log.d(TAG, String.format("Replacing '%s' with '%s'", oldName, newName));
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(_ARTIST, newName);
+
+        int result = db.update(TABLE,values,_ARTIST + "=?", new String[] {oldName});
+        Log.d(TAG,"result = " + result);
+        //db.rawQuery( String.format("UPDATE %s SET %s='%s' WHERE %s=?",TABLE,_ARTIST,newName,_ARTIST), new String[] {oldName});
         db.close();
     }
 

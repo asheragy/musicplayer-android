@@ -1,5 +1,6 @@
 package org.cerion.musicplayer;
 
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
@@ -8,6 +9,8 @@ import android.util.Log;
 import org.cerion.musicplayer.data.AudioFile;
 
 import java.io.File;
+import java.util.Map;
+import java.util.Set;
 
 
 class UpdateDatabaseTask extends AsyncTask<Void,Void,Void> {
@@ -37,6 +40,7 @@ class UpdateDatabaseTask extends AsyncTask<Void,Void,Void> {
         update("Resetting database...");
         mDb.reset();
         addFilesInDirectory(new File(mRootPath));
+        mergeSimilarNames();
         update("Done");
         mDb.log();
 
@@ -58,6 +62,35 @@ class UpdateDatabaseTask extends AsyncTask<Void,Void,Void> {
             }
         }
 
+    }
+
+    //Find similar artist names and merge to most common version, Example "The Beatles" and "Beatles
+    private void mergeSimilarNames() {
+        Log.d(TAG, "checking for names to merge");
+
+        Map<String,Integer> map = mDb.getArtists();
+        Set<String> artists = map.keySet();
+
+        for(String s : artists) {
+            for(String t : artists) {
+                if(isSimilarArtist(s, t)) {
+                    int c1 = map.get(s);
+                    int c2 = map.get(t);
+                    if(c2 >= c1)
+                        mDb.replaceArtist(s,t);
+                }
+            }
+        }
+    }
+
+    private boolean isSimilarArtist(String a1, String a2) {
+        if(a1.contentEquals(a2)) //Exact match is just the same entry
+            return false;
+
+        if(a1.equalsIgnoreCase(a2))
+            return true;
+
+        return false;
     }
 
     private void update(String status)

@@ -33,6 +33,24 @@ public class NavigationListItem implements Comparable<NavigationListItem> {
         isFolder = file.isDirectory();
     }
 
+    public boolean isAudioFile() {
+        if(audioFile != null)
+            return true;
+        if(!isFolder() && AudioFile.isAudioFile(file))
+            return true;
+
+        return false;
+    }
+
+    public AudioFile getAudioFile() {
+        if(audioFile != null)
+            return audioFile;
+        if(!isFolder() && AudioFile.isAudioFile(file))
+            return new AudioFile(file);
+
+        return null;
+    }
+
     public boolean isFolder() {
         return isFolder;
         /*
@@ -51,10 +69,14 @@ public class NavigationListItem implements Comparable<NavigationListItem> {
             comp = (isFolder() ? -1 : 1);
         //if(comp == 0 && !isFolder() && !another.isFolder() && ((audioFile == null && another.audioFile != null) || (audioFile != null && another.audioFile == null)))
         //    comp = (audioFile != null ? -1 : 1);
-        if(comp == 0)
+
+        //IgnoreCase is putting [Unknown] at the top of the list
+        if(comp == 0 && (title.length() > 0 && title.charAt(0) == '[') || (another.title.length() > 0 && another.title.charAt(0) == '['))
             comp = this.title.compareTo(another.title);
         if(comp == 0)
-            comp = this.info.compareTo(another.info);
+            comp = this.title.compareToIgnoreCase(another.title);
+        if(comp == 0)
+            comp = this.info.compareToIgnoreCase(another.info);
 
         return comp;
     }

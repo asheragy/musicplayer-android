@@ -1,15 +1,21 @@
 package org.cerion.musicplayer;
 
 
+import android.app.LauncherActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
+import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ListView;
 
 import org.cerion.musicplayer.data.AudioFile;
 import org.cerion.musicplayer.data.PlayList;
@@ -29,9 +35,9 @@ import java.util.Map;
 public class ArtistListFragment extends NavigationFragment {
 
     private static final String TAG = ArtistListFragment.class.getSimpleName();
-    private NavigationListAdapter mAdapter;
     private boolean mRoot = true;
     private String mArtist;
+    private static final String BLANK_ARTIST_NAME = "[Unknown]";
 
     public ArtistListFragment() {
         // Required empty public constructor
@@ -67,11 +73,13 @@ public class ArtistListFragment extends NavigationFragment {
                 if (item.audioFile == null) { //artist
                     fillWithArtist(item.title);
                 } else { //file
-                    onFileSelected( item.audioFile );
+                    onFileSelected(item.audioFile);
                 }
 
             }
         });
+
+        registerForContextMenu(getListView());
 
     }
 
@@ -114,10 +122,10 @@ public class ArtistListFragment extends NavigationFragment {
 
     private void fillWithArtist(String artist) {
         mRoot = false;
-        mArtist = artist;
+        mArtist = artist.contentEquals(BLANK_ARTIST_NAME) ? "" : artist;
         mNavListener.onNavChanged(isRoot());
 
-        UpdateListTask updateTask = new UpdateListTask(artist);
+        UpdateListTask updateTask = new UpdateListTask(mArtist);
         updateTask.execute();
     }
 
@@ -176,15 +184,17 @@ public class ArtistListFragment extends NavigationFragment {
             while (it.hasNext()) {
                 Map.Entry pair = (Map.Entry)it.next();
                 //String name = pair.getKey() + " - " + pair.getValue();
+                String name = "" + pair.getKey();
+                if(name.length() == 0)
+                    name = BLANK_ARTIST_NAME;
 
-                NavigationListItem item = new NavigationListItem("" + pair.getKey(), "" + pair.getValue());
+                NavigationListItem item = new NavigationListItem(name, "" + pair.getValue());
                 items.add(item);
                 it.remove();
             }
         }
 
         public void setArtist(String artist) {
-
             Database db = Database.getInstance(getContext());
             List<AudioFile> files = db.getFilesForArtist(artist);
 

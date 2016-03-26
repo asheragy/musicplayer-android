@@ -32,7 +32,6 @@ public class DirectoryListFragment extends NavigationFragment {
     private static final String TAG = DirectoryListFragment.class.getSimpleName();
     private String mRootPath;
     private String mCurrentPath;
-    private NavigationListAdapter mAdapter;
 
     public DirectoryListFragment() {
 
@@ -73,6 +72,7 @@ public class DirectoryListFragment extends NavigationFragment {
             }
         });
 
+        registerForContextMenu(getListView());
         setDirectory(mRootPath);
     }
 

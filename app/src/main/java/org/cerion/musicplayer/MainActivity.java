@@ -200,6 +200,8 @@ public class MainActivity extends FragmentActivity implements OnNavigationListen
         Log.d(TAG, "onUpdateDatabase");
         UpdateDatabaseTask mTask = new UpdateDatabaseTask(this,mRootPath);
         mTask.execute();
+
+        //TODO, refresh views
     }
 
 

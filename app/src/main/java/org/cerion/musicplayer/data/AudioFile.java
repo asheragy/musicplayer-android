@@ -86,9 +86,12 @@ public class AudioFile implements Serializable {
         MetaData(File file) {
             mmr.setDataSource(file.getAbsolutePath());
 
-            artist = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
-            album = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM);
-            title = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+            String s = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
+            artist = (s == null ? "" : s);
+            s = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM);
+            album = (s == null ? "" : s);
+            s = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+            title = (s == null ? "" : s);
         }
 
         MetaData(String artist, String album, String title) {
