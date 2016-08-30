@@ -53,12 +53,14 @@ class UpdateDatabaseTask extends AsyncTask<Void,Void,Void> {
         Log.d(TAG, "Adding " + dir.getName());
         update("Adding " + dir.getName());
 
-        for(File f : files) {
-            if(f.isDirectory())
-                addFilesInDirectory(f);
-            else if(AudioFile.isAudioFile(f)) {
-                AudioFile af = new AudioFile(f);
-                mDb.add(af);
+        if(files != null) {
+            for (File f : files) {
+                if (f.isDirectory())
+                    addFilesInDirectory(f);
+                else if (AudioFile.isAudioFile(f)) {
+                    AudioFile af = new AudioFile(f);
+                    mDb.add(af);
+                }
             }
         }
 

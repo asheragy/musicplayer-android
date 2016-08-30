@@ -206,7 +206,8 @@ public class DirectoryListFragment extends NavigationFragment {
             //Arrays.sort(files);
 
             //Log.d("Files", "Size: " + length + " " + f.getAbsolutePath());
-            result.addAll(Arrays.asList(files));
+            if(files != null)
+                result.addAll(Arrays.asList(files));
             return result;
         }
 
