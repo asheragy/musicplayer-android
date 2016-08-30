@@ -92,6 +92,8 @@ public class AudioFile implements Serializable {
             album = (s == null ? "" : s);
             s = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
             title = (s == null ? "" : s);
+
+            mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
         }
 
         MetaData(String artist, String album, String title) {

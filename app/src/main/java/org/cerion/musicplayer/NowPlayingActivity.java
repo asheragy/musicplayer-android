@@ -19,6 +19,7 @@ public class NowPlayingActivity extends AppCompatActivity implements GestureDete
     private TextView mTitle;
     private TextView mArtist;
     private TextView mAlbum;
+    private TextView mLength;
 
     private final AudioStateReceiver mBroadcastReceiver = new AudioStateReceiver() {
         @Override
@@ -31,17 +32,24 @@ public class NowPlayingActivity extends AppCompatActivity implements GestureDete
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.now_playing_activity);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         mTitle = (TextView)findViewById(R.id.title);
         mArtist = (TextView)findViewById(R.id.artist);
         mAlbum = (TextView)findViewById(R.id.album);
+        mLength = (TextView)findViewById(R.id.length);
 
         //onFling to change track
         mDetector = new GestureDetectorCompat(this,this);
 
         //TODO, if track is paused position shows incorrectly, possibly bug in ControlBar
-
         update();
+    }
+
+    @Override
+    public boolean onSupportNavigateUp(){
+        finish();
+        return true;
     }
 
     private boolean mUpdated = false;
@@ -60,6 +68,8 @@ public class NowPlayingActivity extends AppCompatActivity implements GestureDete
             mTitle.setText(af.getTitle());
             mArtist.setText(af.getArtist());
             mAlbum.setText(af.getAlbum());
+
+            mLength.setText( Utils.formatSeconds(AudioService.getLength() / 1000));
         }
     }
 
