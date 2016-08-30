@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -74,6 +75,13 @@ public class DirectoryListFragment extends NavigationFragment {
 
         registerForContextMenu(getListView());
         setDirectory(mRootPath);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        //TODO, find when this can be used if at al
+        outState.putString("test", mCurrentPath);
+        super.onSaveInstanceState(outState);
     }
 
     private void onNavChanged() {
